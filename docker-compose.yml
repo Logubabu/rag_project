@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  rag-app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: lightweight-rag
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./vector_db:/app/vector_db
+      - ./uploads:/app/uploads
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    # If you have an NVIDIA GPU, uncomment below for hardware acceleration:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
