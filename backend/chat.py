@@ -1,5 +1,6 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-import torch
+import os
+from huggingface_hub import hf_hub_download
+from llama_cpp import Llama
 import config
 from vector_store import vector_store
 
@@ -9,24 +10,18 @@ class LLMService:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(LLMService, cls).__new__(cls)
-            cls._instance.device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-            print(f"Loading LLM model {config.LLM_MODEL_NAME} on {cls._instance.device}...")
+            print(f"Downloading/Loading GGUF LLM model (Torch-free)...")
             
-            cls._instance.tokenizer = AutoTokenizer.from_pretrained(config.LLM_MODEL_NAME)
-            cls._instance.model = AutoModelForCausalLM.from_pretrained(
-                config.LLM_MODEL_NAME, 
-                torch_dtype=torch.float16 if cls._instance.device != "cpu" else torch.float32,
-                device_map=cls._instance.device
-            )
+            repo_id = "HuggingFaceTB/SmolLM2-360M-Instruct-GGUF"
+            filename = "smollm2-360m-instruct-q4_k_m.gguf"
             
-            cls._instance.pipe = pipeline(
-                "text-generation",
-                model=cls._instance.model,
-                tokenizer=cls._instance.tokenizer,
-                max_new_tokens=256,
-                temperature=0.1,
-                do_sample=True,
-                repetition_penalty=1.1
+            # This downloads the file to the local HuggingFace cache and returns the path
+            model_path = hf_hub_download(repo_id=repo_id, filename=filename)
+            
+            cls._instance.llm = Llama(
+                model_path=model_path,
+                n_ctx=2048,
+                verbose=False
             )
         return cls._instance
 
@@ -41,25 +36,24 @@ class LLMService:
             
         context = "\n\n".join([f"Source: {res['filename']}\nContent: {res['text']}" for res in results])
         
-        prompt = f"""You are an AI assistant. Answer ONLY from the provided context. If the answer does not exist, respond exactly with: "I couldn't find that information in the uploaded documents." Always include the source filename in your answer if you find the information.
-
+        prompt = f"""<|im_start|>system
+You are an AI assistant. Answer ONLY from the provided context. If the answer does not exist, respond exactly with: "I couldn't find that information in the uploaded documents." Always include the source filename in your answer if you find the information.<|im_end|>
+<|im_start|>user
 Context:
 {context}
 
-Question: {query}
-Answer:"""
-
-        messages = [
-            {"role": "user", "content": prompt}
-        ]
-        
-        formatted_prompt = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+Question: {query}<|im_end|>
+<|im_start|>assistant
+"""
         
         try:
-            outputs = self.pipe(formatted_prompt)
-            generated_text = outputs[0]["generated_text"]
-            # Extract the actual answer part
-            answer = generated_text.split("<|im_start|>assistant")[-1].strip()
+            output = self.llm(
+                prompt,
+                max_tokens=256,
+                temperature=0.1,
+                stop=["<|im_end|>"]
+            )
+            answer = output["choices"][0]["text"].strip()
             
             sources = [{"filename": res['filename'], "score": res['score']} for res in results]
             
