@@ -2,11 +2,10 @@ import os
 import json
 import zipfile
 import tempfile
-import fitz  # PyMuPDF
+import csv
+import openpyxl
 from docx import Document
-import pandas as pd
-from typing import List, Dict, Optional
-import shutil
+from typing import List, Dict
 
 class DocumentLoader:
     def __init__(self):
@@ -31,10 +30,6 @@ class DocumentLoader:
         }
 
     def load_file(self, file_path: str) -> List[Dict[str, str]]:
-        """
-        Loads a file and returns a list of dictionaries containing filename and text content.
-        For zip files, extracts and processes supported files recursively.
-        """
         _, ext = os.path.splitext(file_path.lower())
 
         if ext == '.zip':
@@ -75,14 +70,14 @@ class DocumentLoader:
         return extracted_docs
 
     def load_pdf(self, file_path: str) -> str:
+        import pypdf
         text = ""
-        try:
-            doc = fitz.open(file_path)
-            for page in doc:
-                text += page.get_text("text") + "\n"
-        finally:
-            if 'doc' in locals():
-                doc.close()
+        with open(file_path, 'rb') as f:
+            reader = pypdf.PdfReader(f)
+            for page in reader.pages:
+                extracted = page.extract_text()
+                if extracted:
+                    text += extracted + "\n"
         return text
 
     def load_docx(self, file_path: str) -> str:
@@ -94,12 +89,20 @@ class DocumentLoader:
             return f.read()
 
     def load_csv(self, file_path: str) -> str:
-        df = pd.read_csv(file_path)
-        return df.to_string()
+        text = ""
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            reader = csv.reader(f)
+            for row in reader:
+                text += "\t".join(row) + "\n"
+        return text
 
     def load_excel(self, file_path: str) -> str:
-        df = pd.read_excel(file_path)
-        return df.to_string()
+        wb = openpyxl.load_workbook(file_path, data_only=True)
+        text = ""
+        for sheet in wb.worksheets:
+            for row in sheet.iter_rows(values_only=True):
+                text += "\t".join([str(cell) if cell is not None else "" for cell in row]) + "\n"
+        return text
 
     def load_json(self, file_path: str) -> str:
         with open(file_path, 'r', encoding='utf-8') as f:
