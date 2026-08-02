@@ -24,7 +24,9 @@ async def chat(request: ChatRequest):
     
     if not docs:
         import os
-        fallback_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "fallback_resume.txt")
+        # __file__ is app/routes/chat.py
+        # 3 levels up goes to the 'backend' folder locally, or '/app' in Docker
+        fallback_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "fallback_resume.txt")
         if os.path.exists(fallback_path):
             with open(fallback_path, "r", encoding="utf-8") as f:
                 fallback_content = f.read()
