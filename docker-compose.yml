@@ -12,6 +12,8 @@ services:
     volumes:
       - chromadb_data:/app/vector_db
       - ./uploads:/app/uploads
+    env_file:
+      - .env
     environment:
       - PYTHONUNBUFFERED=1
     restart: unless-stopped
