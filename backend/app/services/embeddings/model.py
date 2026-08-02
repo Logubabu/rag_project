@@ -7,10 +7,11 @@ class EmbeddingModel:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(EmbeddingModel, cls).__new__(cls)
-            # Chroma's DefaultEmbeddingFunction uses ONNX and all-MiniLM-L6-v2 internally.
-            # This requires NO torch, NO network requests at runtime (after initial download),
-            # and is extremely fast and lightweight.
-            cls._instance.model = embedding_functions.DefaultEmbeddingFunction()
+            from app.core.config import settings
+            cls._instance.model = embedding_functions.HuggingFaceEmbeddingFunction(
+                api_key=settings.HF_API_KEY,
+                model_name=settings.EMBEDDING_MODEL
+            )
         return cls._instance
 
     def encode(self, texts: List[str]) -> List[List[float]]:

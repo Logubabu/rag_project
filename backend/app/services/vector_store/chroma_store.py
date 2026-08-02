@@ -11,7 +11,11 @@ class ChromaStore:
             path=settings.VECTOR_DB_DIR,
             settings=ChromaSettings(anonymized_telemetry=False)
         )
-        self.collection = self.client.get_or_create_collection(name="documents")
+        from app.services.embeddings.model import embedding_model
+        self.collection = self.client.get_or_create_collection(
+            name="documents",
+            embedding_function=embedding_model.model
+        )
 
     def add_chunks(self, document_id: str, filename: str, chunks: List[str], embeddings: List[List[float]]):
         ids = [f"{document_id}_{i}" for i in range(len(chunks))]
@@ -78,6 +82,10 @@ class ChromaStore:
     def reindex(self):
         # Just clear collection
         self.client.delete_collection(name="documents")
-        self.collection = self.client.get_or_create_collection(name="documents")
+        from app.services.embeddings.model import embedding_model
+        self.collection = self.client.get_or_create_collection(
+            name="documents",
+            embedding_function=embedding_model.model
+        )
 
 vector_store = ChromaStore()
