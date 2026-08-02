@@ -13,7 +13,10 @@ COPY backend/requirements.txt .
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential \
     && pip install --no-cache-dir --prefix=/install -r requirements.txt \
     && rm -rf /install/lib/python3.12/site-packages/kubernetes \
-    && rm -rf /install/lib/python3.12/site-packages/uvloop
+    && rm -rf /install/lib/python3.12/site-packages/uvloop \
+    && rm -rf /install/lib/python3.12/site-packages/onnxruntime* \
+    && mkdir -p /install/lib/python3.12/site-packages/onnxruntime \
+    && touch /install/lib/python3.12/site-packages/onnxruntime/__init__.py
 
 # Stage 3: Final Image
 FROM python:3.12-slim
