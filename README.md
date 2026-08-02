@@ -1,85 +1,113 @@
-# Lightweight RAG Application
+# Production-Ready RAG Application
 
-A lightweight, production-quality Retrieval-Augmented Generation (RAG) web application built with FastAPI, React, and local open-source models. It allows you to upload documents and chat with them securely without using paid APIs.
+A lightweight, scalable, and modular Retrieval-Augmented Generation (RAG) application built with Python (FastAPI), React, ChromaDB, and Groq API. It uses `sentence-transformers` for embedding generation locally without relying on heavy frameworks like LangChain.
 
 ## Features
-- **Local Execution**: 100% local, no API keys needed.
-- **Multiple File Types**: Supports PDF, TXT, DOCX, CSV, JSON, ZIP, etc.
-- **Vector Storage**: Uses ChromaDB for fast, persistent document embedding retrieval.
-- **Modern UI**: Built with React, Vite, and Tailwind CSS.
-- **LLM & Embeddings**: Uses `SmolLM2-360M-Instruct` and `all-MiniLM-L6-v2`.
+- **Upload Documents:** Supports PDF, DOCX, TXT, CSV, Excel, JSON, Markdown, Code files, and ZIP archives.
+- **Custom Text Chunking:** Splits text with customizable size (800) and overlap (100).
+- **Local Embeddings:** Uses `sentence-transformers/all-MiniLM-L6-v2` loaded once for efficiency.
+- **Vector Search:** Persists vectors locally using ChromaDB.
+- **LLM Integration:** Connects to Groq API (primary) with fallback to Hugging Face Inference API.
+- **ChatGPT-Style UI:** React frontend featuring drag & drop upload, progress bars, dark mode, typing animation, markdown rendering, and source citations.
+- **Clean Architecture:** Modular backend built with FastAPI.
+- **Dockerized:** Ready for deployment on Hugging Face Spaces, Render, Koyeb, etc.
 
-## Project Structure
-```text
-RAG/
+## Folder Structure
+
+```
+rag-app/
+│
 ├── backend/
-│   ├── app.py              # FastAPI application and endpoints
-│   ├── chat.py             # LLM setup and chat logic
-│   ├── config.py           # Configuration parameters
-│   ├── document_loader.py  # File parsing logic
-│   ├── embeddings.py       # Sentence-Transformers model setup
-│   ├── models.py           # Pydantic models for validation
-│   ├── requirements.txt    # Python dependencies
-│   ├── utils.py            # Recursive text splitter
-│   └── vector_store.py     # ChromaDB wrapper
-└── frontend/
-    ├── package.json        # Node.js dependencies
-    ├── src/
-    │   ├── App.jsx         # Main layout
-    │   ├── index.css       # Tailwind base styles
-    │   ├── main.jsx        # React entry point
-    │   ├── pages/          # Chat and Files pages
-    │   └── services/       # API integration via Axios
-    ├── tailwind.config.js
-    └── vite.config.js
+│   ├── app/
+│   │   ├── core/         # Config and logging
+│   │   ├── models/       # Pydantic schemas
+│   │   ├── routes/       # API endpoints (upload, chat, documents, system)
+│   │   ├── services/     # Core logic (loaders, chunking, embeddings, vector_store, chat)
+│   │   └── main.py       # FastAPI application entry
+│   └── requirements.txt
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/   # ChatInterface, UploadManager
+│   │   ├── services/     # Axios API service
+│   │   ├── App.jsx       # Main layout
+│   │   └── index.css     # Tailwind CSS entry
+│   ├── package.json
+│   ├── tailwind.config.js
+│   └── vite.config.js
+│
+├── .env                  # Environment variables
+├── Dockerfile            # Multi-stage Docker build
+└── README.md             # This file
+```
+
+## Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+LLM_PROVIDER=groq
+EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+CHUNK_SIZE=800
+CHUNK_OVERLAP=100
+TOP_K=5
+
+GROQ_API_KEY=your_groq_api_key_here
+HF_API_KEY=your_hf_api_key_here
 ```
 
 ## Installation & Running Locally
 
-### Backend Setup
-1. Open a terminal and navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-2. Create and activate a virtual environment (optional but recommended):
-   ```bash
-   python -m venv venv
-   # On Windows:
-   venv\Scripts\activate
-   # On macOS/Linux:
-   source venv/bin/activate
-   ```
+### Backend
+
+1. Navigate to the `backend` directory.
+2. Create a virtual environment and activate it.
 3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-4. Start the backend server:
+4. Run the FastAPI server:
    ```bash
-   uvicorn app:app --reload
+   uvicorn app.main:app --reload
    ```
 
-*Note: The first time you run this, it will download the Hugging Face models (`SmolLM2-360M-Instruct` and `all-MiniLM-L6-v2`). This may take a few minutes.*
+### Frontend
 
-### Frontend Setup
-1. Open a new terminal and navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-2. Install Node modules:
+1. Navigate to the `frontend` directory.
+2. Install dependencies:
    ```bash
    npm install
    ```
-3. Start the Vite development server:
+3. Run the development server:
    ```bash
    npm run dev
    ```
 
-## API Endpoints
-- `POST /upload`: Upload one or multiple files.
-- `POST /chat`: Submit a question and get a generated response based on your documents.
-- `GET /documents`: List all uploaded files.
-- `DELETE /documents/{id}`: Delete a specific file.
+## Docker Deployment
 
-## Deployment Guide
-- **Frontend (Vercel)**: Connect your GitHub repository to Vercel and set the Root Directory to `frontend`. Vite settings will automatically apply.
-- **Backend (Render)**: Connect your repository to Render, select `backend` as the root directory, use `pip install -r requirements.txt` as the Build Command, and `uvicorn app:app --host 0.0.0.0 --port $PORT` as the Start Command.
+This project includes a multi-stage Dockerfile that builds the React frontend and serves it statically via FastAPI.
+
+### Build Docker Image
+```bash
+docker build -t rag-app .
+```
+
+### Run Docker Container
+```bash
+docker run -p 8000:8000 --env-file .env rag-app
+```
+Access the application at `http://localhost:8000`.
+
+## API Documentation
+
+Once the backend is running, access the interactive API docs at:
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
+
+### Endpoints
+- `POST /api/upload`: Upload files for processing.
+- `POST /api/chat`: Ask questions to the RAG system.
+- `GET /api/documents`: List uploaded documents.
+- `DELETE /api/document/{id}`: Delete a document and its embeddings.
+- `GET /api/statistics`: Get system statistics.
+- `POST /api/reindex`: Clear the vector database.

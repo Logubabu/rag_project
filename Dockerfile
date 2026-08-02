@@ -1,5 +1,5 @@
 # Stage 1: Build Frontend
-FROM node:20-alpine AS frontend-builder
+FROM node:18-alpine AS frontend-builder
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm install
@@ -9,27 +9,36 @@ RUN npm run build
 # Stage 2: Build Backend Dependencies
 FROM python:3.12-slim AS backend-builder
 WORKDIR /app
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
 COPY backend/requirements.txt .
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-RUN pip install --no-cache-dir -r requirements.txt
-RUN find /opt/venv -type d -name "__pycache__" -exec rm -r {} +
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential \
+    && pip install --no-cache-dir --prefix=/install -r requirements.txt
 
-# Stage 3: Final Runtime
+# Stage 3: Final Image
 FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV VITE_API_URL=/api
+
 WORKDIR /app
 
-COPY --from=backend-builder /opt/venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+# Copy python dependencies
+COPY --from=backend-builder /install /usr/local
 
-COPY backend/ ./
+# Copy backend code
+COPY backend/ /app/
+
+# Copy built frontend from Stage 1 to a static directory
 COPY --from=frontend-builder /app/frontend/dist /app/static
 
-RUN mkdir -p /app/vector_db /app/uploads
+# Prune unnecessary files to reduce image size
+RUN find /usr/local/lib/python3.12 -type d -name "__pycache__" -exec rm -r {} + || true \
+    && find /usr/local/lib/python3.12 -type d -name "tests" -exec rm -r {} + || true \
+    && rm -rf /usr/local/lib/python3.12/site-packages/pip \
+    && rm -rf /usr/local/lib/python3.12/site-packages/setuptools
 
+# Expose port
 EXPOSE 8000
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run FastAPI
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

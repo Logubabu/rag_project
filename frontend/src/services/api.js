@@ -1,25 +1,26 @@
 import axios from 'axios';
 
-// Use relative URL in production (single container), or localhost for local dev
-const API_URL = import.meta.env.PROD ? '' : 'http://localhost:8000';
-
-export const api = axios.create({
-  baseURL: API_URL,
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || '/api',
 });
 
-export const uploadFiles = async (files) => {
+export const uploadFiles = async (files, onUploadProgress) => {
   const formData = new FormData();
-  for (let i = 0; i < files.length; i++) {
-    formData.append('files', files[i]);
-  }
+  Array.from(files).forEach((file) => {
+    formData.append('files', file);
+  });
+
   const response = await api.post('/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    onUploadProgress,
   });
   return response.data;
 };
 
-export const chat = async (query) => {
-  const response = await api.post('/chat', { query });
+export const chat = async (question) => {
+  const response = await api.post('/chat', { question });
   return response.data;
 };
 
@@ -29,6 +30,16 @@ export const getDocuments = async () => {
 };
 
 export const deleteDocument = async (id) => {
-  const response = await api.delete(`/documents/${id}`);
+  const response = await api.delete(`/document/${id}`);
+  return response.data;
+};
+
+export const getStatistics = async () => {
+  const response = await api.get('/statistics');
+  return response.data;
+};
+
+export const reindex = async () => {
+  const response = await api.post('/reindex');
   return response.data;
 };
