@@ -1,0 +1,33 @@
+LOGANATHAN R
+Software Engineer | Python Developer
+Chennai, Tamil Nadu | +91 84898 08561 | loganathanrbl@gmail.com
+linkedin.com/in/loganathan-r-120916216 | loganathanr-portfolio.lovable.app
+PROFESSIONAL SUMMARY
+Results-driven Software Engineer with 4+ years of experience designing and building scalable backend systems, REST APIs, real-time dashboards, and full-stack applications using Python, FastAPI, SQL, MongoDB, Docker, React and Flutter. Proven track record improving API response time by up to 40% through performance optimization, and delivering production systems spanning WebSocket integration, RBAC access control, OCR automation, and cloud-ready architecture. Skilled in leveraging AI-assisted development tools (Claude, GitHub Copilot, ChatGPT) for code review, debugging, refactoring, and performance tuning, accelerating delivery while maintaining high code quality. TECHNICAL SKILLS
+Programming Languages: Python, JavaScript, TypeScript, SQL
+Backend Development: FastAPI, REST API Design, Node.js, Express.js, WebSockets
+Frontend Development: React, Angular, Flutter
+Databases: MongoDB, SQL
+DevOps & Tools: Docker, Git, Azure, API Integration, Agile/Scrum, CI/CD Pipelines
+AI-Assisted Development: Claude, GitHub Copilot, ChatGPT — used for code quality review, performance optimization, debugging, and critical issue resolution
+Core Concepts: Role-Based Access Control (RBAC) , Real-Time Systems, OCR Automation, Performance Optimization, Scalable Architecture, System Design,Microservices, Unit Testing, API Security PROFESSIONAL EXPERIENCE
+Software Engineer — Populus Empowerment Network Pvt Ltd, Chennai | Mar 2023 – Jul 2026
+● Designed and developed scalable REST APIs using Python and FastAPI to power high-traffic, data-intensive applications.
+● Built high-performance full-stack applications using React and Node.js, improving reliability and user experience across products.
+● Developed real-time election analytics dashboards with WebSocket integration, enabling live data streaming and visualization.
+● Optimized SQL queries and backend services, improving API response time by 40%.
+● Configured and managed Docker-based deployment environments, enabling scalable, consistent infrastructure across environments.
+● Leveraged AI coding assistants (Claude, GitHub Copilot, ChatGPT) to review code quality, identify and fix critical bugs, and optimize performance across backend and frontend services.
+Software Developer — Peninsular Research Operation Pvt Ltd, Chennai | Mar 2022 – Feb 2023
+● Developed analytics dashboards using Angular, Node.js, and MongoDB to support data-driven decision-making.
+● Built configurable workflow systems and RESTful APIs to streamline internal business processes.
+● Improved application performance and stability through systematic debugging and code optimization.
+● Implemented OCR-based data extraction systems using Python and Tesseract OCR, automating manual data-entry workflows.
+PROJECTS
+Warroom Dashboard: Built a high-traffic, real-time election analytics dashboard with live data streaming using Python, FastAPI, WebSockets, Docker, and MongoDB; used Claude and GitHub Copilot for code review, performance optimization, and critical bug fixes to improve reliability under high concurrent load.
+HawkEye Dashboard: Developed scalable APIs and RBAC modules, reducing response time by 40% using Python, FastAPI, React (TypeScript), SQL, and MongoDB; applied ChatGPT and Claude for debugging, code quality reviews, and query/performance optimization.
+Public Infotainment App: Built a cross-platform mobile application for media streaming and debate content using Flutter, Python, and FastAPI.
+E-Paper Extraction System: Automated an OCR-based newspaper extraction and preprocessing pipeline using Python,selenium, BeautifulSoup, and Tesseract OCR.
+GPMD Dashboard: Developed a scalable analytics dashboard with dynamic charts, configurable workflows, and real-time visualization using Angular (TypeScript), Chart.js, and Form.io. EDUCATION
+Master of Science in Computer Science — G.T.N Arts College, Dindigul | 2019 – 2021 | GPA: 7.5
+Bachelor of Science in Computer Science — G.T.N Arts College, Dindigul | 2016 – 2019 | GPA: 6.5

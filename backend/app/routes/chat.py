@@ -11,17 +11,31 @@ router = APIRouter()
 async def chat(request: ChatRequest):
     question = request.question
     
-    # 1. Embed question
-    query_embedding = embedding_model.encode([question])[0]
-    
-    # 2. Retrieve chunks
-    docs, metas, similarities = vector_store.search(query_embedding, top_k=settings.TOP_K)
+    docs, metas, similarities = [], [], []
+    try:
+        # 1. Embed question (this might fail if HF API is down)
+        if vector_store.collection.count() > 0:
+            query_embedding = embedding_model.encode([question])[0]
+            # 2. Retrieve chunks
+            docs, metas, similarities = vector_store.search(query_embedding, top_k=settings.TOP_K)
+    except Exception as e:
+        print(f"Vector search/embedding failed: {e}. Falling back to default resume.")
+        docs = []
     
     if not docs:
-        return ChatResponse(
-            answer="I couldn't find that information in the uploaded documents.",
-            citations=[]
-        )
+        import os
+        fallback_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "fallback_resume.txt")
+        if os.path.exists(fallback_path):
+            with open(fallback_path, "r", encoding="utf-8") as f:
+                fallback_content = f.read()
+            docs = [fallback_content]
+            metas = [{"filename": "fallback_resume.txt", "chunk_index": 0}]
+            similarities = [1.0]
+        else:
+            return ChatResponse(
+                answer="I couldn't find that information in the uploaded documents. (Fallback resume not found either.)",
+                citations=[]
+            )
         
     # 3. Format context
     context = "\n\n".join(docs)
