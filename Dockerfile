@@ -11,7 +11,10 @@ FROM python:3.12-slim AS backend-builder
 WORKDIR /app
 COPY backend/requirements.txt .
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential \
-    && pip install --no-cache-dir --prefix=/install -r requirements.txt
+    && pip install --no-cache-dir --prefix=/install -r requirements.txt \
+    && rm -rf /install/lib/python3.12/site-packages/kubernetes \
+    && rm -rf /install/lib/python3.12/site-packages/uvloop \
+    && find /install -name "*.so" -exec strip {} + || true
 
 # Stage 3: Final Image
 FROM python:3.12-slim
@@ -36,7 +39,6 @@ RUN find /usr/local/lib/python3.12 -type d -name "__pycache__" -exec rm -r {} + 
     && find /usr/local/lib/python3.12 -type d -name "tests" -exec rm -r {} + || true \
     && rm -rf /usr/local/lib/python3.12/site-packages/pip \
     && rm -rf /usr/local/lib/python3.12/site-packages/setuptools
-
 # Expose port
 EXPOSE 8000
 
